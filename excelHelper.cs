@@ -20,71 +20,64 @@ class ExcelHelper
             var worksheet = excelPackage.Workbook.Worksheets.Add("Setup");
 
             NewRow(worksheet);
-            // Image img = Image.FromFile(@"Sample.png");  
-            // ExcelPicture pic = worksheet.Drawings.AddPicture("Sample", img);  
+            worksheet.Row(worksheet.Dimension.Rows).Height = 50;
+            Image img = Image.FromFile(@"Xcelerator.png");  
+            ExcelPicture pic = worksheet.Drawings.AddPicture("Xcelerator", img);  
+            pic.SetPosition(0, 5, 0, 0);
 
-            var titleCell = worksheet.Cells[worksheet.Dimension.Rows, 1, worksheet.Dimension.Rows, 5];
-            titleCell.Value = setup.Title;
-            titleCell.Style.Font.Bold = true;
-            titleCell.Style.Font.Size = 16;
-            titleCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            titleCell.Merge = true;
+            Image img2 = Image.FromFile(@"STP.png");  
+            ExcelPicture pic2 = worksheet.Drawings.AddPicture("STP", img2);  
+            pic2.SetPosition(0, 5, 4, 15);
+
+            SetTitle(worksheet, setup.Title, 16);
 
             SetCellValue(worksheet, "Facility", setup.Facility);
-            Merge(worksheet);
-            SetBorder(worksheet);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Site", setup.Site);
-            Merge(worksheet);
-            SetBorder(worksheet);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Department", setup.Department);
-            Merge(worksheet);
-            SetBorder(worksheet);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "CustomField", setup.CustomField);
-            Merge(worksheet);
-            SetBorder(worksheet);
             NewRow(worksheet);
 
-            SetCellValue(worksheet, "Site Manager", setup.SiteManager);
-            SetCellValueSameRow(worksheet, "Site Manager Title", setup.SiteManagerTitle);
-
-            SetCellValue(worksheet, "Audit Manager", setup.AuditManager);
-            SetCellValueSameRow(worksheet, "Audit Manager Title", setup.AuditManagerTitle);
-
-            SetCellValue(worksheet, "Start Date", setup.InspectionStartDate.ToShortDateString());
-            SetCellValueSameRow(worksheet, "End Date", setup.InspectionEndDate.ToShortDateString());
-
+            SetCellValue(worksheet, 
+            "Site Manager", setup.SiteManager, 
+            "Site Manager Title", setup.SiteManagerTitle);
+            SetCellValue(worksheet, 
+            "Audit Manager", setup.AuditManager, 
+            "Audit Manager Title", setup.AuditManagerTitle);
+            SetCellValue(worksheet, 
+            "Managers", setup.Managers, 
+            "Managers Title", setup.ManagersTitle);
             NewRow(worksheet);
 
-            var inspectionCell = worksheet.Cells[worksheet.Dimension.Rows + 1, 1, worksheet.Dimension.Rows + 1, 5];
-            inspectionCell.Value = "Inspection";
-            inspectionCell.Style.Font.Bold = true;
-            inspectionCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            inspectionCell.Merge = true;
-
+            SetTitle(worksheet, "Inspection");
             NewRow(worksheet);
 
-            SetCellValue(worksheet, "Lead Inspector", setup.LeadInspector);
-            SetCellValueSameRow(worksheet, "Lead Inspector Title", setup.LeadInspectorTitle);
+            var startDate = setup.InspectionStartDate.ToShortDateString();
+            var endDate = setup.InspectionEndDate.ToShortDateString();
+            SetCellValue(worksheet, "Start Date", startDate, "End Date", endDate);
+            NewRow(worksheet);
 
-            SetCellValue(worksheet, "Site Inspector1", setup.SiteInspector1);
-            SetCellValueSameRow(worksheet, "Site Inspector1 Title", setup.SiteInspector1Title);
-
-            SetCellValue(worksheet, "Site Inspector2", setup.SiteInspector2);
-            SetCellValueSameRow(worksheet, "Site Inspector2 Title", setup.SiteInspector2Title);
-
-            SetCellValue(worksheet, "Other Site Inspectors", setup.OtherSiteInspectors);
-            SetCellValueSameRow(worksheet, "Other Site Inspectors Title", setup.OtherSiteInspectorsTitle);
+            SetCellValue(worksheet, 
+            "Lead Inspector", setup.LeadInspector, 
+            "Lead Inspector Title", setup.LeadInspectorTitle);
+            SetCellValue(worksheet, 
+            "Site Inspector1", setup.SiteInspector1, 
+            "Site Inspector1 Title", setup.SiteInspector1Title);
+            SetCellValue(worksheet, 
+            "Site Inspector2", setup.SiteInspector2, 
+            "Site Inspector2 Title", setup.SiteInspector2Title);
+            SetCellValue(worksheet, 
+            "Other Site Inspectors", setup.OtherSiteInspectors, 
+            "Other Site Inspectors Title", setup.OtherSiteInspectorsTitle);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Notes", setup.Notes);
-            Merge(worksheet);
-            SetBorder(worksheet);
+            worksheet.Row(worksheet.Dimension.Rows).Height = 100;
 
             worksheet.Cells.AutoFitColumns();
             worksheet.Column(2).Width = 40;
@@ -95,28 +88,27 @@ class ExcelHelper
         }
     }
 
-    private static void SetBorder(ExcelWorksheet worksheet)
-    {
-        worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 5].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-    }
-
-    private static void Merge(ExcelWorksheet worksheet)
-    {
-        worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 5].Merge = true;
-    }
-
-    private static void SetCellValue(ExcelWorksheet worksheet, string name, string value)
+    private static void SetCellValue(ExcelWorksheet worksheet, params string[] values)
     {
         int row = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
-        SetLabel(worksheet.Cells[row, 1], name);
-        SetValue(worksheet.Cells[row, 2], value);
-    }
 
-    private static void SetCellValueSameRow(ExcelWorksheet worksheet, string name, string value)
-    {
-        int row = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows;
-        SetLabel(worksheet.Cells[row, 4], name);
-        SetValue(worksheet.Cells[row, 5], value);
+        var cell1 = worksheet.Cells[row, 1];
+        SetLabel(cell1, values[0]);
+
+        var cell2 = worksheet.Cells[row, 2];
+        SetValue(cell2, values[1]);
+
+        if(values.Length == 2){
+            worksheet.Cells[row, 2, row, 5].Merge = true;
+            worksheet.Cells[row, 2, row, 5].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            return;
+        }
+
+        var cell3 = worksheet.Cells[row, 4];        
+        SetLabel(cell3, values[2]);
+
+        var cell4 = worksheet.Cells[row, 5];  
+        SetValue(cell4, values[3]);
     }
 
     private static void SetValue(ExcelRange cell, string value)
@@ -124,6 +116,8 @@ class ExcelHelper
         cell.Value = value;
         cell.Style.Border.BorderAround(ExcelBorderStyle.Medium);
         cell.Style.WrapText = true;
+        cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+
         if (string.IsNullOrEmpty(value))
         {
             Color colFromHex = System.Drawing.ColorTranslator.FromHtml("#DCE6F0");
@@ -137,30 +131,25 @@ class ExcelHelper
         cell.Value = name + ":";
         cell.Style.Font.Bold = true;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+        cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
     }
 
     private static void NewRow(ExcelWorksheet worksheet)
     {
-        int newRow = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
-        worksheet.Cells[newRow, 1].Value = "";
+        int row = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
+        var cell = worksheet.Cells[row, 1, row, 5];
+        cell.Value = "";
+        cell.Merge = true;
     }
 
-    public static void Open()
+    private static void SetTitle(ExcelWorksheet worksheet, string value, int fontSize = 11)
     {
-        var fi = new FileInfo(@"F:\File.xlsx");
-        using (var excelPackage = new ExcelPackage(fi))
-        {
-            var firstWorksheet = excelPackage.Workbook.Worksheets[0];
-
-            var namedWorksheet = excelPackage.Workbook.Worksheets["SomeWorksheet"];
-
-            var anotherWorksheet =
-                excelPackage.Workbook.Worksheets.FirstOrDefault(x => x.Name == "SomeWorksheet");
-
-            string valA1 = firstWorksheet.Cells["A1"].Value.ToString();
-            string valB1 = firstWorksheet.Cells[1, 2].Value.ToString();
-
-            excelPackage.Save();
-        }
+        int row = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
+        var cell = worksheet.Cells[row, 1, row, 5];
+        cell.Value = value;
+        cell.Style.Font.Bold = true;
+        cell.Style.Font.Size = fontSize;
+        cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        cell.Merge = true;
     }
 }
