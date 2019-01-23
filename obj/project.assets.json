@@ -4893,11 +4893,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\MySolutions\\epplus-demo\\epplus-demo.csproj",
+      "projectUniqueName": "e:\\MySolutions\\EPPlusDemo\\epplus-demo.csproj",
       "projectName": "epplus-demo",
-      "projectPath": "E:\\MySolutions\\epplus-demo\\epplus-demo.csproj",
+      "projectPath": "e:\\MySolutions\\EPPlusDemo\\epplus-demo.csproj",
       "packagesPath": "C:\\Users\\Fred\\.nuget\\packages\\",
-      "outputPath": "E:\\MySolutions\\epplus-demo\\obj\\",
+      "outputPath": "e:\\MySolutions\\EPPlusDemo\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

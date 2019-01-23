@@ -1,38 +1,15 @@
 
 
 using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using OfficeOpenXml;
+using OfficeOpenXml.Drawing;
 using OfficeOpenXml.Style;
 
 class ExcelHelper
 {
-    private static void SetCellValue(ExcelWorksheet worksheet, string name, string value)
-    {
-        int newRow = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
-        worksheet.Cells[newRow, 1].Value = name + ":";
-        worksheet.Cells[newRow, 1].Style.Font.Bold = true;
-
-        worksheet.Cells[newRow, 2].Value = value;
-        worksheet.Cells[newRow, 2].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-    }
-
-    private static void NewRow(ExcelWorksheet worksheet)
-    {
-        int newRow = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
-        worksheet.Cells[newRow, 1].Value = "";
-    }
-
-    private static void SetCellValueSameRow(ExcelWorksheet worksheet, string name, string value)
-    {
-        int row = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows;
-        worksheet.Cells[row, 3].Value = name + ":";
-        worksheet.Cells[row, 3].Style.Font.Bold = true;
-
-        worksheet.Cells[row, 4].Value = value;
-        worksheet.Cells[row, 4].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-    }
 
     public static void Create(AuditingQuestionnaireSetupDto setup)
     {
@@ -42,29 +19,35 @@ class ExcelHelper
 
             var worksheet = excelPackage.Workbook.Worksheets.Add("Setup");
 
-            SetCellValue(worksheet, "Facility", setup.Facility);
-            worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 4].Merge = true;
-            worksheet.Cells[worksheet.Dimension.Rows, 3].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-            worksheet.Cells[worksheet.Dimension.Rows, 4].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            NewRow(worksheet);
+            // Image img = Image.FromFile(@"Sample.png");  
+            // ExcelPicture pic = worksheet.Drawings.AddPicture("Sample", img);  
 
+            var titleCell = worksheet.Cells[worksheet.Dimension.Rows, 1, worksheet.Dimension.Rows, 5];
+            titleCell.Value = setup.Title;
+            titleCell.Style.Font.Bold = true;
+            titleCell.Style.Font.Size = 16;
+            titleCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            titleCell.Merge = true;
+
+            SetCellValue(worksheet, "Facility", setup.Facility);
+            Merge(worksheet);
+            SetBorder(worksheet);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Site", setup.Site);
-            worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 4].Merge = true;
-            worksheet.Cells[worksheet.Dimension.Rows, 3].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-            worksheet.Cells[worksheet.Dimension.Rows, 4].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            Merge(worksheet);
+            SetBorder(worksheet);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Department", setup.Department);
-            worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 4].Merge = true;
-            worksheet.Cells[worksheet.Dimension.Rows, 3].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-            worksheet.Cells[worksheet.Dimension.Rows, 4].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            Merge(worksheet);
+            SetBorder(worksheet);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "CustomField", setup.CustomField);
-            worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 4].Merge = true;
-            worksheet.Cells[worksheet.Dimension.Rows, 3].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-            worksheet.Cells[worksheet.Dimension.Rows, 4].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            Merge(worksheet);
+            SetBorder(worksheet);
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Site Manager", setup.SiteManager);
@@ -75,6 +58,15 @@ class ExcelHelper
 
             SetCellValue(worksheet, "Start Date", setup.InspectionStartDate.ToShortDateString());
             SetCellValueSameRow(worksheet, "End Date", setup.InspectionEndDate.ToShortDateString());
+
+            NewRow(worksheet);
+
+            var inspectionCell = worksheet.Cells[worksheet.Dimension.Rows + 1, 1, worksheet.Dimension.Rows + 1, 5];
+            inspectionCell.Value = "Inspection";
+            inspectionCell.Style.Font.Bold = true;
+            inspectionCell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            inspectionCell.Merge = true;
+
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Lead Inspector", setup.LeadInspector);
@@ -91,14 +83,66 @@ class ExcelHelper
             NewRow(worksheet);
 
             SetCellValue(worksheet, "Notes", setup.Notes);
-            worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 4].Merge = true;
-            worksheet.Cells[worksheet.Dimension.Rows, 3].Style.Border.BorderAround(ExcelBorderStyle.Medium);
-            worksheet.Cells[worksheet.Dimension.Rows, 4].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+            Merge(worksheet);
+            SetBorder(worksheet);
 
             worksheet.Cells.AutoFitColumns();
+            worksheet.Column(2).Width = 40;
+            worksheet.Column(5).Width = 40;
+
             var fi = new FileInfo(@"F:\File.xlsx");
             excelPackage.SaveAs(fi);
         }
+    }
+
+    private static void SetBorder(ExcelWorksheet worksheet)
+    {
+        worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 5].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+    }
+
+    private static void Merge(ExcelWorksheet worksheet)
+    {
+        worksheet.Cells[worksheet.Dimension.Rows, 2, worksheet.Dimension.Rows, 5].Merge = true;
+    }
+
+    private static void SetCellValue(ExcelWorksheet worksheet, string name, string value)
+    {
+        int row = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
+        SetLabel(worksheet.Cells[row, 1], name);
+        SetValue(worksheet.Cells[row, 2], value);
+    }
+
+    private static void SetCellValueSameRow(ExcelWorksheet worksheet, string name, string value)
+    {
+        int row = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows;
+        SetLabel(worksheet.Cells[row, 4], name);
+        SetValue(worksheet.Cells[row, 5], value);
+    }
+
+    private static void SetValue(ExcelRange cell, string value)
+    {
+        cell.Value = value;
+        cell.Style.Border.BorderAround(ExcelBorderStyle.Medium);
+        cell.Style.WrapText = true;
+        if (string.IsNullOrEmpty(value))
+        {
+            Color colFromHex = System.Drawing.ColorTranslator.FromHtml("#DCE6F0");
+            cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+            cell.Style.Fill.BackgroundColor.SetColor(colFromHex);
+        }
+    }
+
+    private static void SetLabel(ExcelRange cell, string name)
+    {
+        cell.Value = name + ":";
+        cell.Style.Font.Bold = true;
+        cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+    }
+
+    private static void NewRow(ExcelWorksheet worksheet)
+    {
+        int newRow = worksheet.Dimension == null ? 1 : worksheet.Dimension.Rows + 1;
+        worksheet.Cells[newRow, 1].Value = "";
     }
 
     public static void Open()

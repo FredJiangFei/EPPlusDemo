@@ -9,3 +9,14 @@ E:\MySolutions\epplus-demo\obj\Debug\netcoreapp2.2\epplus-demo.AssemblyInfoInput
 E:\MySolutions\epplus-demo\obj\Debug\netcoreapp2.2\epplus-demo.AssemblyInfo.cs
 E:\MySolutions\epplus-demo\obj\Debug\netcoreapp2.2\epplus-demo.dll
 E:\MySolutions\epplus-demo\obj\Debug\netcoreapp2.2\epplus-demo.pdb
+E:\MySolutions\EPPlusDemo\bin\Debug\netcoreapp2.2\epplus-demo.deps.json
+E:\MySolutions\EPPlusDemo\bin\Debug\netcoreapp2.2\epplus-demo.runtimeconfig.json
+E:\MySolutions\EPPlusDemo\bin\Debug\netcoreapp2.2\epplus-demo.runtimeconfig.dev.json
+E:\MySolutions\EPPlusDemo\bin\Debug\netcoreapp2.2\epplus-demo.dll
+E:\MySolutions\EPPlusDemo\bin\Debug\netcoreapp2.2\epplus-demo.pdb
+E:\MySolutions\EPPlusDemo\obj\Debug\netcoreapp2.2\epplus-demo.csprojAssemblyReference.cache
+E:\MySolutions\EPPlusDemo\obj\Debug\netcoreapp2.2\epplus-demo.csproj.CoreCompileInputs.cache
+E:\MySolutions\EPPlusDemo\obj\Debug\netcoreapp2.2\epplus-demo.AssemblyInfoInputs.cache
+E:\MySolutions\EPPlusDemo\obj\Debug\netcoreapp2.2\epplus-demo.AssemblyInfo.cs
+E:\MySolutions\EPPlusDemo\obj\Debug\netcoreapp2.2\epplus-demo.dll
+E:\MySolutions\EPPlusDemo\obj\Debug\netcoreapp2.2\epplus-demo.pdb
