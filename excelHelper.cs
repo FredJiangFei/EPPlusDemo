@@ -14,61 +14,120 @@ class ExcelHelper
 
     public static void Create()
     {
-        using (var excelPackage = new ExcelPackage())
+        using (var package = new ExcelPackage())
         {
-            excelPackage.Workbook.Properties.Created = DateTime.Now;
+            package.Workbook.Properties.Created = DateTime.Now;
 
             var setup = MockData.GetSetup();
-            // CreateSetupSheet(excelPackage, setup);
+            var questions = MockData.GetQuestions();
+            var results = MockData.GetResults();
 
-            var mergedCells = new List<ExcelRange>();
-            var results = MockData.GetResult();
-            var worksheet = excelPackage.Workbook.Worksheets.Add("Results_Dashboard");
-
-            NewRow(worksheet, mergedCells, 50);
-            AddSheetHeaderImages(worksheet);
-
-            var title = setup.Title + " - Applicable Regulations - Results Dashboard";
-            SetTitle(worksheet, title, mergedCells, 16);
-
-            NewRow(worksheet, mergedCells);
-
-            SetDashboardTableHeader(worksheet, results);
-            foreach (var result in results)
-            {
-                SetDashboardTableBody(worksheet, result);
-            }
-
-            MergeCellsToMatchMaxColumn(mergedCells, worksheet);
-            worksheet.Cells.AutoFitColumns();
+            CreateSetupSheet(package, setup);
+            CreateResultSheet(package, results, setup.Title);
+            CreateCorrectiveActionSheet(package, questions, setup.Title);
 
             var fi = new FileInfo(@"F:\File.xlsx");
-            excelPackage.SaveAs(fi);
+            package.SaveAs(fi);
         }
     }
 
-    private static void MergeCellsToMatchMaxColumn(List<ExcelRange> mergedCells, ExcelWorksheet worksheet)
+    private static void CreateCorrectiveActionSheet(ExcelPackage package, List<QuestionDto> questions, string setupTitle)
     {
-        mergedCells.ForEach(cell =>
-        {
-            worksheet.Cells[cell.Start.Row, 1, cell.Start.Row, worksheet.Dimension.End.Column].Merge = true;
-        });
-    }
+        var mergedCells = new List<ExcelRange>();
+        var worksheet = package.Workbook.Worksheets.Add("Corrective_Action");
+        
+        NewRow(worksheet, mergedCells, 50);
+        AddSheetHeaderImages(worksheet);
 
-    private static void SetDashboardTableHeader(ExcelWorksheet worksheet, List<AuditingQuestionnaireResultDto> results)
-    {
-        var result = results.FirstOrDefault();
-        if (result == null)
-        {
-            return;
-        }
+        var title = setupTitle + " - Applicable Regulations - Corrective Action Report";
+        SetTitle(worksheet, title, mergedCells);
+        NewRow(worksheet, mergedCells);
 
         var headers = new List<string>() {
-            "% Completed", "Scoresheet", "% Compliance", "Score", "Max Score"
-        };
-        var dynamicHeaders = result.AuditingRatingCounts.Select(x => x.Key);
-        headers.AddRange(dynamicHeaders);
+                "Number",
+                "Section",
+                "Rank",
+                "Status",
+                "Score",
+                "Observations",
+                "Recommendations",
+                "Person Assigned",
+                "Start Date",
+                "Date Complete"
+            };
+        SetTableHeader(worksheet, headers);
 
+        foreach (var question in questions)
+        {
+            var values = new List<string>() {
+                   "1",
+                   question.Section,
+                   question.RankRating?.ToString(),
+                   "Status",
+                   question.AuditRating?.ToString(),
+                   question.Observations,
+                   question.Recommendations,
+                   question.AssignAnaswerUserName,
+                   question.StartDate.ToShortDateString(),
+                   question.CompleteDate.ToShortDateString()
+                };
+            SetTableBody(worksheet, values, 1);
+        }
+        MergeCellsToMatchMaxColumn(mergedCells, worksheet);
+        worksheet.Cells.AutoFitColumns();
+        worksheet.Column(2).Width = 20;
+        worksheet.Column(6).Width = 50;
+        worksheet.Column(7).Width = 50;
+    }
+
+    private static void CreateResultSheet(ExcelPackage package, List<AuditingQuestionnaireResultDto> results, string setupTitle)
+    {
+        var mergedCells = new List<ExcelRange>();
+       
+        var worksheet = package.Workbook.Worksheets.Add("Results_Dashboard");
+
+        NewRow(worksheet, mergedCells, 50);
+        AddSheetHeaderImages(worksheet);
+
+        var title = setupTitle + " - Applicable Regulations - Results Dashboard";
+        SetTitle(worksheet, title, mergedCells);
+
+        NewRow(worksheet, mergedCells);
+
+        var firstResult = results.FirstOrDefault();
+        if (firstResult != null)
+        {
+            var headers = new List<string>() {
+                "% Completed", "Scoresheet", "% Compliance", "Score", "Max Score"
+            };
+            var dynamicHeaders = firstResult.AuditingRatingCounts.Select(x => x.Key);
+            headers.AddRange(dynamicHeaders);
+            SetTableHeader(worksheet, headers);
+
+            int tableRow = 1;
+            foreach (var result in results)
+            {
+                var values = new List<string>() {
+                    result.Complete.ToString("0.00%"),
+                    result.ScoreSheet,
+                    result.Compliance.ToString("0.00%"),
+                    result.Score.ToString(),
+                    result.MaxScore.ToString()
+                };
+                var dynamicValues = result.AuditingRatingCounts.Select(x => x.Value.ToString());
+                values.AddRange(dynamicValues);
+
+                SetTableBody(worksheet, values, tableRow);
+                tableRow++;
+            }
+        }
+
+        MergeCellsToMatchMaxColumn(mergedCells, worksheet);
+        worksheet.Cells.AutoFitColumns();
+    }
+
+    private static void SetTableHeader(ExcelWorksheet worksheet, List<string> headers)
+    {
         int row = GetNewRow(worksheet);
         int col = 1;
         foreach (var item in headers)
@@ -78,30 +137,29 @@ class ExcelHelper
             cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
             cell.Style.Font.Color.SetColor(Color.White);
             cell.Style.Font.Bold = true;
+            cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
             SetBackgroundColor(cell, "#343896");
             col++;
         }
     }
 
-    private static void SetDashboardTableBody(ExcelWorksheet worksheet, AuditingQuestionnaireResultDto result)
+    private static void SetTableBody(ExcelWorksheet worksheet, List<string> values, int tableRow)
     {
         int row = GetNewRow(worksheet);
         int col = 1;
-
-        var values = new List<string>() {
-            result.Complete.ToString("0.00%"),
-            result.ScoreSheet,
-            result.Compliance.ToString("0.00%"),
-            result.Score.ToString(),
-            result.MaxScore.ToString()
-        };
-        var dynamicValues = result.AuditingRatingCounts.Select(x => x.Value.ToString());
-        values.AddRange(dynamicValues);
         foreach (var value in values)
         {
             var cell = worksheet.Cells[row, col];
             cell.Value = value;
             cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+            cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
+            cell.Style.WrapText = true;
+            cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+           
+            if (tableRow % 2 == 0)
+            {
+                SetBackgroundColor(cell, "#D3D3D3");
+            }
             col++;
         }
     }
@@ -114,7 +172,7 @@ class ExcelHelper
         NewRow(worksheet, mergedCells, 50);
         AddSheetHeaderImages(worksheet);
 
-        SetTitle(worksheet, setup.Title + " - Audit", mergedCells, 16);
+        SetTitle(worksheet, setup.Title + " - Audit", mergedCells);
 
         SetSetupCellValue(worksheet, "Facility", setup.Facility);
         NewRow(worksheet, mergedCells);
@@ -139,7 +197,7 @@ class ExcelHelper
         "Managers Title", setup.ManagersTitle);
         NewRow(worksheet, mergedCells);
 
-        SetTitle(worksheet, "Inspection", mergedCells);
+        SetTitle(worksheet, "Inspection", mergedCells, 11);
         NewRow(worksheet, mergedCells);
 
         var startDate = setup.InspectionStartDate.ToShortDateString();
@@ -163,6 +221,7 @@ class ExcelHelper
 
         SetSetupCellValue(worksheet, "Notes", setup.Notes);
         worksheet.Row(worksheet.Dimension.Rows).Height = 100;
+
         MergeCellsToMatchMaxColumn(mergedCells, worksheet);
 
         worksheet.Cells.AutoFitColumns();
@@ -246,7 +305,7 @@ class ExcelHelper
         mergedCells.Add(cell);
     }
 
-    private static void SetTitle(ExcelWorksheet worksheet, string value, List<ExcelRange> mergedCells, int fontSize = 11)
+    private static void SetTitle(ExcelWorksheet worksheet, string value, List<ExcelRange> mergedCells, int fontSize = 16)
     {
         int row = GetNewRow(worksheet);
         var cell = worksheet.Cells[row, 1];
@@ -255,6 +314,14 @@ class ExcelHelper
         cell.Style.Font.Size = fontSize;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         mergedCells.Add(cell);
+    }
+
+    private static void MergeCellsToMatchMaxColumn(List<ExcelRange> mergedCells, ExcelWorksheet worksheet)
+    {
+        mergedCells.ForEach(cell =>
+        {
+            worksheet.Cells[cell.Start.Row, 1, cell.Start.Row, worksheet.Dimension.End.Column].Merge = true;
+        });
     }
 
     private static int GetNewRow(ExcelWorksheet worksheet)

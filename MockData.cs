@@ -8,7 +8,7 @@ public class MockData
     {
         var setup = new AuditingQuestionnaireSetupDto
         {
-            Title = "SHE Test -  - Audit",
+            Title = "SHE Test",
             Facility = "Fac 567",
             Site = "North Wacker Drive, Peoria, IL, USA",
             Department = "Department 1",
@@ -35,7 +35,7 @@ public class MockData
         return setup;
     }
 
-    public static List<AuditingQuestionnaireResultDto> GetResult()
+    public static List<AuditingQuestionnaireResultDto> GetResults()
     {
         var results = new List<AuditingQuestionnaireResultDto> {
             new AuditingQuestionnaireResultDto
@@ -90,5 +90,41 @@ public class MockData
 
 
         return results;
+    }
+
+    public static List<QuestionDto> GetQuestions()
+    {
+        return new List<QuestionDto>{
+            new QuestionDto{
+                Section = "AUS 2017 - General Environmental - Australia National - General Environmental",
+                RankRating = 8,
+                AuditRating = 10,
+                StartDate = DateTime.Now.AddDays(-3),
+                CompleteDate = DateTime.Now.AddDays(1),
+                AssignAnaswerUserName = "fred",
+                Observations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table.",
+                Recommendations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table."
+            },
+            new QuestionDto{
+                Section = "AUS 2017 - General Environmental - Australia National - General Environmental",
+                RankRating = 8,
+                AuditRating = 10,
+                StartDate = DateTime.Now.AddDays(-3),
+                CompleteDate = DateTime.Now.AddDays(1),
+                AssignAnaswerUserName = "fred",
+                Observations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table.",
+                Recommendations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table."
+            },
+            new QuestionDto{
+                Section = "AUS 2017 - General Environmental - Australia National - General Environmental",
+                RankRating = 8,
+                AuditRating = 10,
+                StartDate = DateTime.Now.AddDays(-3),
+                CompleteDate = DateTime.Now.AddDays(1),
+                AssignAnaswerUserName = "fred",
+                Observations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table.",
+                Recommendations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table."
+            }
+        };
     }
 }
