@@ -67,7 +67,7 @@ class ExcelHelper
                 question.StartDate.ToShortDateString(),
                 question.CompleteDate.ToShortDateString()
             };
-            SetTableBody(worksheet, values, 1);
+            SetTableRowValue(worksheet, values, 1);
         }
 
         worksheet.Cells.AutoFitColumns();
@@ -108,7 +108,7 @@ class ExcelHelper
                 var dynamicValues = result.AuditingRatingCounts.Select(x => x.Value.ToString());
                 values.AddRange(dynamicValues);
 
-                SetTableBody(worksheet, values, tableRow);
+                SetTableRowValue(worksheet, values, tableRow);
                 tableRow++;
             }
         }
@@ -138,7 +138,7 @@ class ExcelHelper
         }
     }
 
-    private static void SetTableBody(ExcelWorksheet worksheet, List<string> values, int tableRow)
+    private static void SetTableRowValue(ExcelWorksheet worksheet, List<string> values, int tableRow)
     {
         int row = GetNewRow(worksheet);
         int col = 1;
