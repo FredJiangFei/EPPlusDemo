@@ -107,7 +107,7 @@ public class MockData
             },
             new QuestionDto{
                 Section = "AUS 2017 - General Environmental - Australia National - General Environmental",
-                RankRating = 8,
+                RankRating = 2,
                 AuditRating = 10,
                 StartDate = DateTime.Now.AddDays(-3),
                 CompleteDate = DateTime.Now.AddDays(1),
@@ -118,10 +118,10 @@ public class MockData
             new QuestionDto{
                 Section = "AUS 2017 - General Environmental - Australia National - General Environmental",
                 RankRating = 8,
-                AuditRating = 10,
+                AuditRating = 6,
                 StartDate = DateTime.Now.AddDays(-3),
                 CompleteDate = DateTime.Now.AddDays(1),
-                AssignAnaswerUserName = "fred",
+                AssignAnaswerUserName = "yan",
                 Observations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table.",
                 Recommendations = "This table builds on the foundation of the CDK data-table and uses a similar interface for its data input and template, except that its element and attribute selectors will be prefixed with mat- instead of cdk-. For more information on the interface and a detailed look at how the table is implemented, see the guide covering the CDK data-table."
             }

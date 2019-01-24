@@ -33,66 +33,57 @@ class ExcelHelper
 
     private static void CreateCorrectiveActionSheet(ExcelPackage package, List<QuestionDto> questions, string setupTitle)
     {
-        var mergedCells = new List<ExcelRange>();
         var worksheet = package.Workbook.Worksheets.Add("Corrective_Action");
-        
-        NewRow(worksheet, mergedCells, 50);
-        AddSheetHeaderImages(worksheet);
-
-        var title = setupTitle + " - Applicable Regulations - Corrective Action Report";
-        SetTitle(worksheet, title, mergedCells);
-        NewRow(worksheet, mergedCells);
-
         var headers = new List<string>() {
-                "Number",
-                "Section",
-                "Rank",
-                "Status",
-                "Score",
-                "Observations",
-                "Recommendations",
-                "Person Assigned",
-                "Start Date",
-                "Date Complete"
-            };
+            "Number",
+            "Section",
+            "Rank",
+            "Status",
+            "Score",
+            "Observations",
+            "Recommendations",
+            "Person Assigned",
+            "Start Date",
+            "Date Complete"
+        };
+
+        int row = GetNewRow(worksheet);
+        ExcelRange tableRange = worksheet.Cells[row, 1, row + questions.Count(), headers.Count()];
+        worksheet.Tables.Add(tableRange, "CorrectiveActionTable");
+
         SetTableHeader(worksheet, headers);
 
         foreach (var question in questions)
         {
             var values = new List<string>() {
-                   "1",
-                   question.Section,
-                   question.RankRating?.ToString(),
-                   "Status",
-                   question.AuditRating?.ToString(),
-                   question.Observations,
-                   question.Recommendations,
-                   question.AssignAnaswerUserName,
-                   question.StartDate.ToShortDateString(),
-                   question.CompleteDate.ToShortDateString()
-                };
+                "1",
+                question.Section,
+                question.RankRating?.ToString(),
+                "Status",
+                question.AuditRating?.ToString(),
+                question.Observations,
+                question.Recommendations,
+                question.AssignAnaswerUserName,
+                question.StartDate.ToShortDateString(),
+                question.CompleteDate.ToShortDateString()
+            };
             SetTableBody(worksheet, values, 1);
         }
-        MergeCellsToMatchMaxColumn(mergedCells, worksheet);
+
         worksheet.Cells.AutoFitColumns();
         worksheet.Column(2).Width = 20;
         worksheet.Column(6).Width = 50;
         worksheet.Column(7).Width = 50;
+
+        var title = setupTitle + " - Applicable Regulations - Corrective Action Report";
+        SetTopTitle(worksheet, title);
+
+        AddTopImages(worksheet, 2, -50);
     }
 
     private static void CreateResultSheet(ExcelPackage package, List<AuditingQuestionnaireResultDto> results, string setupTitle)
     {
-        var mergedCells = new List<ExcelRange>();
-       
         var worksheet = package.Workbook.Worksheets.Add("Results_Dashboard");
-
-        NewRow(worksheet, mergedCells, 50);
-        AddSheetHeaderImages(worksheet);
-
-        var title = setupTitle + " - Applicable Regulations - Results Dashboard";
-        SetTitle(worksheet, title, mergedCells);
-
-        NewRow(worksheet, mergedCells);
 
         var firstResult = results.FirstOrDefault();
         if (firstResult != null)
@@ -122,8 +113,12 @@ class ExcelHelper
             }
         }
 
-        MergeCellsToMatchMaxColumn(mergedCells, worksheet);
         worksheet.Cells.AutoFitColumns();
+
+        var title = setupTitle + " - Applicable Regulations - Results Dashboard";
+        SetTopTitle(worksheet, title);
+
+        AddTopImages(worksheet, 2, -30);
     }
 
     private static void SetTableHeader(ExcelWorksheet worksheet, List<string> headers)
@@ -150,12 +145,13 @@ class ExcelHelper
         foreach (var value in values)
         {
             var cell = worksheet.Cells[row, col];
+            SetBackgroundColor(cell, "#fff");
             cell.Value = value;
             cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
             cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
             cell.Style.WrapText = true;
             cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
-           
+
             if (tableRow % 2 == 0)
             {
                 SetBackgroundColor(cell, "#D3D3D3");
@@ -168,11 +164,6 @@ class ExcelHelper
     {
         var worksheet = package.Workbook.Worksheets.Add("Setup");
         var mergedCells = new List<ExcelRange>();
-
-        NewRow(worksheet, mergedCells, 50);
-        AddSheetHeaderImages(worksheet);
-
-        SetTitle(worksheet, setup.Title + " - Audit", mergedCells);
 
         SetSetupCellValue(worksheet, "Facility", setup.Facility);
         NewRow(worksheet, mergedCells);
@@ -197,7 +188,7 @@ class ExcelHelper
         "Managers Title", setup.ManagersTitle);
         NewRow(worksheet, mergedCells);
 
-        SetTitle(worksheet, "Inspection", mergedCells, 11);
+        SetTitle(worksheet, "Inspection", mergedCells);
         NewRow(worksheet, mergedCells);
 
         var startDate = setup.InspectionStartDate.ToShortDateString();
@@ -227,17 +218,23 @@ class ExcelHelper
         worksheet.Cells.AutoFitColumns();
         worksheet.Column(2).Width = 40;
         worksheet.Column(5).Width = 40;
+
+        SetTopTitle(worksheet, setup.Title + " - Audit");
+        AddTopImages(worksheet, 1, 20);
     }
 
-    private static void AddSheetHeaderImages(ExcelWorksheet worksheet)
+    private static void AddTopImages(ExcelWorksheet worksheet, int lastCol, int lastColOffset)
     {
-        Image img = Image.FromFile(@"Xcelerator.png");
-        ExcelPicture pic = worksheet.Drawings.AddPicture("Xcelerator", img);
-        pic.SetPosition(0, 5, 0, 0);
+        InsertRowToTop(worksheet);
+        worksheet.Row(1).Height = 50;
 
-        Image img2 = Image.FromFile(@"STP.png");
-        ExcelPicture pic2 = worksheet.Drawings.AddPicture("STP", img2);
-        pic2.SetPosition(0, 5, 4, 15);
+        Image xcelerator = Image.FromFile(@"Xcelerator.png");
+        ExcelPicture xceleratorPic = worksheet.Drawings.AddPicture("Xcelerator", xcelerator);
+        xceleratorPic.SetPosition(0, 5, 0, 0);
+
+        Image stp = Image.FromFile(@"STP.png");
+        ExcelPicture stpPic = worksheet.Drawings.AddPicture("STP", stp);
+        stpPic.SetPosition(0, 5, worksheet.Dimension.End.Column - lastCol, lastColOffset);
     }
 
     private static void SetSetupCellValue(ExcelWorksheet worksheet, params string[] values)
@@ -292,26 +289,39 @@ class ExcelHelper
         cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
     }
 
-    private static void NewRow(ExcelWorksheet worksheet, List<ExcelRange> mergedCells, int? height = null)
+    private static void NewRow(ExcelWorksheet worksheet, List<ExcelRange> mergedCells)
     {
         int row = GetNewRow(worksheet);
         var cell = worksheet.Cells[row, 1];
         cell.Value = "";
-
-        if (height != null)
-        {
-            worksheet.Row(row).Height = 50;
-        }
         mergedCells.Add(cell);
     }
 
-    private static void SetTitle(ExcelWorksheet worksheet, string value, List<ExcelRange> mergedCells, int fontSize = 16)
+    private static void InsertRowToTop(ExcelWorksheet worksheet)
+    {
+        worksheet.InsertRow(1, 1);
+        var cell = worksheet.Cells[1, 1];
+        cell.Value = "";
+        cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column].Merge = true;
+    }
+
+    private static void SetTopTitle(ExcelWorksheet worksheet, string value)
+    {
+        InsertRowToTop(worksheet);
+        var cell = worksheet.Cells[1, 1];
+        cell.Value = value;
+        cell.Style.Font.Bold = true;
+        cell.Style.Font.Size = 16;
+    }
+
+    private static void SetTitle(ExcelWorksheet worksheet, string value, List<ExcelRange> mergedCells)
     {
         int row = GetNewRow(worksheet);
         var cell = worksheet.Cells[row, 1];
         cell.Value = value;
         cell.Style.Font.Bold = true;
-        cell.Style.Font.Size = fontSize;
+        cell.Style.Font.Size = 11;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         mergedCells.Add(cell);
     }
