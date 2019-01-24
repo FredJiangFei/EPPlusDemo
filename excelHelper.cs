@@ -19,7 +19,7 @@ class ExcelHelper
             excelPackage.Workbook.Properties.Created = DateTime.Now;
 
             var setup = MockData.GetSetup();
-            CreateSetupSheet(excelPackage, setup);
+            // CreateSetupSheet(excelPackage, setup);
 
             var mergedCells = new List<ExcelRange>();
             var results = MockData.GetResult();
@@ -34,9 +34,10 @@ class ExcelHelper
             NewRow(worksheet, mergedCells);
 
             SetDashboardTableHeader(worksheet, results);
-
-            
-
+            foreach (var result in results)
+            {
+                SetDashboardTableBody(worksheet, result);
+            }
 
             MergeCellsToMatchMaxColumn(mergedCells, worksheet);
             worksheet.Cells.AutoFitColumns();
@@ -78,6 +79,29 @@ class ExcelHelper
             cell.Style.Font.Color.SetColor(Color.White);
             cell.Style.Font.Bold = true;
             SetBackgroundColor(cell, "#343896");
+            col++;
+        }
+    }
+
+    private static void SetDashboardTableBody(ExcelWorksheet worksheet, AuditingQuestionnaireResultDto result)
+    {
+        int row = GetNewRow(worksheet);
+        int col = 1;
+
+        var values = new List<string>() {
+            result.Complete.ToString("0.00%"),
+            result.ScoreSheet,
+            result.Compliance.ToString("0.00%"),
+            result.Score.ToString(),
+            result.MaxScore.ToString()
+        };
+        var dynamicValues = result.AuditingRatingCounts.Select(x => x.Value.ToString());
+        values.AddRange(dynamicValues);
+        foreach (var value in values)
+        {
+            var cell = worksheet.Cells[row, col];
+            cell.Value = value;
+            cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
             col++;
         }
     }
