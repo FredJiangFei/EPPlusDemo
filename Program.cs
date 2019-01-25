@@ -7,7 +7,7 @@ namespace epplus_demo
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            ExcelHelper.Create();
+            QuestionnaireExcelTool.Create();
         }
     }
 }
