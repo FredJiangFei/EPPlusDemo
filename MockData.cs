@@ -42,7 +42,7 @@ public class MockData
             {
                 Id = 2,
                 ScoreSheet = "Rulebook 1",
-                Complete = 0.33m,
+                Complete = 0.00m,
                 Compliance = 0.11m,
                 Score = 15,
                 MaxScore = 9,

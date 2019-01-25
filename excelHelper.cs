@@ -52,13 +52,15 @@ class QuestionnaireExcelTool
         worksheet.Tables.Add(table, "CorrectiveActionTable");
 
         int col = 1;
-        foreach(var header in headers){
+        foreach (var header in headers)
+        {
             worksheet.SetTableHeader(header, col);
-            col ++ ;
+            col++;
         }
 
         foreach (var question in questions)
         {
+            worksheet.NewRow();
             var values = new List<string>() {
                 "1",
                 "Section",
@@ -71,7 +73,14 @@ class QuestionnaireExcelTool
                 DateTime.Now.ToShortDateString(),
                 DateTime.Now.ToShortDateString()
             };
-            worksheet.SetTableRow(values, 1);
+
+            int valCol = 1;
+            foreach (var item in values)
+            {
+                worksheet.SetTableRow(item, valCol, 1);
+                valCol++;
+            }
+
         }
 
         worksheet.Cells.AutoFitColumns();
@@ -95,27 +104,42 @@ class QuestionnaireExcelTool
             };
             var dynamicHeaders = firstResult.AuditingRatingCounts.Select(x => x.Key);
             headers.AddRange(dynamicHeaders);
-           
+
             int col = 1;
-            foreach(var header in headers){
-               worksheet.SetTableHeader(header, col);
-               col ++ ;
+            foreach (var header in headers)
+            {
+                worksheet.SetTableHeader(header, col);
+                col++;
             }
 
             int tableRow = 1;
             foreach (var result in results)
             {
-                var values = new List<string>() {
-                    result.Complete.ToString("0.00%"),
-                    result.ScoreSheet,
-                    result.Compliance.ToString("0.00%"),
-                    result.Score.ToString(),
-                    result.MaxScore.ToString()
-                };
-                var dynamicValues = result.AuditingRatingCounts.Select(x => x.Value.ToString());
-                values.AddRange(dynamicValues);
+                worksheet.NewRow()
+                .SetTableRow(result.Complete.ToString("0.00%"), 1, tableRow)
+                .SetResultDashboardCellBackgroundColor(result.Complete);
 
-                worksheet.SetTableRow(values, tableRow);
+                worksheet.SetTableRow(result.ScoreSheet, 2, tableRow);
+
+                worksheet
+                .SetTableRow(result.Compliance.ToString("0.00%"), 3, tableRow)
+                .SetResultDashboardCellBackgroundColor(result.Compliance);
+
+                worksheet
+                .SetTableRow(result.Score.ToString(), 4, tableRow)
+                .SetResultDashboardCellBackgroundColor(result.Score);
+
+
+                worksheet.SetTableRow(result.MaxScore.ToString(), 5, tableRow);
+
+                var dynamicValues = result.AuditingRatingCounts.Select(x => x.Value.ToString());
+                int valCol = 6;
+                foreach (var item in dynamicValues)
+                {
+                    worksheet.SetTableRow(item, valCol, tableRow);
+                    valCol++;
+                }
+
                 tableRow++;
             }
         }
@@ -197,7 +221,7 @@ static class ExcelHelper
         cell.Style.Font.Size = 11;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         mergedCells.Add(cell);
-        
+
         return worksheet;
     }
 
@@ -242,29 +266,25 @@ static class ExcelHelper
         cell.Style.Font.Color.SetColor(Color.White);
         cell.Style.Font.Bold = true;
         cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
-        cell.SetBackgroundColor("#343896");
+        cell.SetTableHeaderBackgroundColor();
     }
 
-    public static void SetTableRow(this ExcelWorksheet worksheet, List<string> values, int tableRow)
+    public static ExcelRange SetTableRow(this ExcelWorksheet worksheet, string value, int col, int tableRow)
     {
-        int row = worksheet.GetNewRowIdx();
-        int col = 1;
-        foreach (var value in values)
-        {
-            var cell = worksheet.Cells[row, col];
-            cell.SetBackgroundColor("#fff");
-            cell.Value = value;
-            cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
-            cell.Style.WrapText = true;
-            cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+        int row = worksheet.GetCurrentRowIdx();
+        var cell = worksheet.Cells[row, col];
+        cell.SetWhiteBackgroundColor();
+        cell.Value = value;
+        cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        cell.Style.Border.BorderAround(ExcelBorderStyle.Thin);
+        cell.Style.WrapText = true;
+        cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
 
-            if (tableRow % 2 == 0)
-            {
-                cell.SetBackgroundColor("#D3D3D3");
-            }
-            col++;
+        if (tableRow % 2 == 0)
+        {
+            cell.SetTableRowSeparateBackgroundColor();
         }
+        return cell;
     }
 
     public static ExcelWorksheet SetFromValue(this ExcelWorksheet worksheet, params string[] values)
@@ -297,15 +317,8 @@ static class ExcelHelper
 
         if (string.IsNullOrEmpty(value))
         {
-            cell.SetBackgroundColor("#DCE6F0");
+            cell.SetSetupNoValueBackgroundColor();
         }
-    }
-
-    public static void SetBackgroundColor(this ExcelRange cell, string hex)
-    {
-        Color colFromHex = ColorTranslator.FromHtml(hex);
-        cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
-        cell.Style.Fill.BackgroundColor.SetColor(colFromHex);
     }
 
     public static void SetSetupLabel(ExcelRange cell, string name)
@@ -314,6 +327,14 @@ static class ExcelHelper
         cell.Style.Font.Bold = true;
         cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
         cell.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+    }
+
+    public static ExcelWorksheet NewRow(this ExcelWorksheet worksheet)
+    {
+        int row = worksheet.GetNewRowIdx();
+        var cell = worksheet.Cells[row, 1];
+        cell.Value = "";
+        return worksheet;
     }
 
     public static ExcelWorksheet NewRow(this ExcelWorksheet worksheet, List<ExcelRange> mergedCells)
@@ -334,5 +355,41 @@ static class ExcelHelper
         });
     }
 
+    public static void SetBackgroundColor(this ExcelRange cell, string hex)
+    {
+        Color colFromHex = ColorTranslator.FromHtml(hex);
+        cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+        cell.Style.Fill.BackgroundColor.SetColor(colFromHex);
+    }
 
+    public static void SetSetupNoValueBackgroundColor(this ExcelRange cell)
+    {
+        cell.SetBackgroundColor("#DCE6F0");
+    }
+
+    public static void SetWhiteBackgroundColor(this ExcelRange cell)
+    {
+        cell.SetBackgroundColor("#fff");
+    }
+
+    public static void SetTableHeaderBackgroundColor(this ExcelRange cell)
+    {
+        cell.SetBackgroundColor("#343896");
+    }
+
+    public static void SetTableRowSeparateBackgroundColor(this ExcelRange cell)
+    {
+        cell.SetBackgroundColor("#D3D3D3");
+    }
+
+    public static void SetResultDashboardCellBackgroundColor(this ExcelRange cell, decimal value)
+    {
+        if (value == 0.00m)
+        {
+            cell.SetBackgroundColor("#FAC000");
+            return;
+        }
+        
+        cell.SetBackgroundColor("#92D050");
+    }
 }
